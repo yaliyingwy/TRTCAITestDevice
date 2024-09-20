@@ -1,0 +1,18 @@
+/* 
+  AITestDeviceLocalizable.strings
+  Pods
+
+  Created by ywen on 2024/9/9.
+  
+*/
+"ai.network.detecting" = "Network check in progress…";
+"ai.network.tip" = "Try to keep your network signal at full strength.";
+"ai.button.next" = "Next";
+"ai.button.retest" = "Retest";
+"ai.network.good" = "Network check completed, the current network is smooth!";
+"ai.network.poor" = "Network check completed, the current network quality is poor, communication is possible but not smooth.";
+"ai.network.bad" = "Network check completed, the current network quality is poor, communication is almost impossible.";
+"ai.sayhi" = "You can greet like this";
+"ai.welcome" = "Welcome to the LingoAce Classroom！";
+"ai.select.language" = "Please select your language";
+"ai.guide" = "Operating Guide";

@@ -1,0 +1,18 @@
+/* 
+  AITestDeviceLocalizable.strings
+  Pods
+
+  Created by ywen on 2024/9/12.
+  
+*/
+"ai.network.detecting" = "Détection du réseau en cours…";
+"ai.network.tip" = "Essayez de maintenir une connexion réseau optimale.";
+"ai.button.next" = "suivant";
+"ai.button.retest" = "Réexamen";
+"ai.network.good" = "Détection du réseau terminée, le réseau actuel est fluide !";
+"ai.network.poor" = "Détection du réseau terminée, la qualité du réseau est médiocre, la communication est possible mais pas fluide.";
+"ai.network.bad" = "Détection du réseau terminée, la qualité du réseau est médiocre, la communication est presque impossible.";
+"ai.sayhi" = "Voici comment vous pouvez saluer";
+"ai.welcome" = "Bienvenue dans la salle de classe LingoAce！";
+"ai.select.language" = "Veuillez sélectionner votre langue";
+"ai.guide" = "Guide d'utilisation";

@@ -21,22 +21,37 @@ Pod::Spec.new do |s|
 TODO: Add long description of the pod here.
                        DESC
 
-  s.homepage         = 'https://github.com/moonwen/TRTCAITestDevice'
+  s.homepage         = 'https://github.com/yaliyingwy/TRTCAITestDevice'
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'moonwen' => 'moonwen@tencent.com' }
   s.source           = { :git => 'https://github.com/moonwen/TRTCAITestDevice.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
-  s.ios.deployment_target = '10.0'
+  s.ios.deployment_target = '12.0'
 
-  s.source_files = 'TRTCAITestDevice/Classes/**/*'
-  
-  # s.resource_bundles = {
-  #   'TRTCAITestDevice' => ['TRTCAITestDevice/Assets/*.png']
-  # }
+
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
   # s.dependency 'AFNetworking', '~> 2.3'
+#  s.dependency 'Masonry', '1.1.0'
+ 
+  s.default_subspec = 'Core'
+  s.static_framework = true
+
+ s.subspec 'Core' do |core|
+     core.dependency 'Masonry', '1.1.0'
+     core.source_files = 'TRTCAITestDevice/Classes/**/*'
+     core.public_header_files = 'TRTCAITestDevice/Classes/**/*.h'
+     core.resource_bundles = {
+        'TRTCAITestDevice' => ['TRTCAITestDevice/Assets/*.xcassets', 'TRTCAITestDevice/Assets/Localized/**/*.strings', 'TRTCAITestDevice/Assets/Lottie/**/*.json', 'TRTCAITestDevice/Assets/Lottie/**/*.mp3']
+      }
+ end
+  
+  s.subspec 'WithLib' do |withlib|
+      
+      withlib.dependency 'lottie-ios', '~> 2.5.3'
+      withlib.dependency 'TXLiteAVSDK_TRTC'
+  end
 end

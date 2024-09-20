@@ -1,0 +1,18 @@
+/* 
+  AITestDeviceLocalizable.strings
+  Pods
+
+  Created by ywen on 2024/9/9.
+  
+*/
+"ai.network.detecting" = "网络检测中…";
+"ai.network.tip" = "尽量保持网络信号满格状态";
+"ai.button.next" = "下一步";
+"ai.button.retest" = "重试";
+"ai.network.good" = "检测完成-通过    网络检测完成，当前网络顺畅！";
+"ai.network.poor" = "网络检测完成，当前网络质量较差，勉强能沟通但不顺畅。";
+"ai.network.bad" = "网络检测完成，当前网络质量较差，基本不能沟通。";
+"ai.sayhi" = "可以这样打招呼";
+"ai.welcome" = "欢迎来到LingoAce课堂！";
+"ai.select.language" = "请选择您的语言";
+"ai.guide" = "操作指南";

@@ -1,0 +1,6 @@
+framework module Pods_TRTCAITestDevice_Example {
+  umbrella header "Pods-TRTCAITestDevice_Example-umbrella.h"
+
+  export *
+  module * { export * }
+}
