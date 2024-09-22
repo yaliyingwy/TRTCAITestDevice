@@ -16,11 +16,13 @@ typedef NS_ENUM(NSInteger, ControlAICode) {
     CodeDetectNetworkPoor = 2004,
     CodeDetectNetworkBad = 2005,
     CodeDetectNetworkRetryFail = 2008,
-    CodeDetectCamera = 3001,
-    CodeDetectCameraSuccess = 3002,
+    CodeDetectCamera = 3101,
+    CodeDetectCameraSuccess = 3102,
     CodeDetectCameraNoPermission = 3003,
-    CodeDetectMicrophone = 4001,
-    CodeDetectMicrophoneSuccess = 4011,
+    CodeDetectMicrophone = 4101,
+    CodeDetectMicrophoneSuccess = 4101,
+    CodeDetectMicrophone10s = 4102,
+    CodeDetectMicrophone20s = 4103,
     CodeDetectMicrophoneNoPermission = 4004,
 };
 
@@ -52,3 +54,23 @@ typedef NS_ENUM(NSInteger, AIDetectPage) {
     DectectCameraAndMicrophonePage = 2,
     DectectSpeakerPage = 3
 };
+
+typedef NS_ENUM(NSInteger, AIStatus) {
+    AIUnknown = 0,
+    AIListening = 1,
+    AIThinking = 2,
+    AISpeaking = 3,
+    AIInterrupt = 4
+};
+
+
+typedef NS_ENUM(NSInteger, AIMessageType) {
+    AIMessageTypeText = 10000,
+    AIMessageTypeStatus = 10001
+};
+
+typedef NS_ENUM(NSInteger, AICommandType) {
+    AICommandTypeText = 20000,
+    AICommandTypeInterrupt = 20001
+};
+

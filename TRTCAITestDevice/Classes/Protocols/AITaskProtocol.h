@@ -20,6 +20,9 @@ NS_ASSUME_NONNULL_BEGIN
 @optional
 - (void) reportResult:(AIDeviceDetectType) type result:(int) result duration:(int) duration;
 
+@optional
+-(void) onDetectPermission:(AIDeviceDetectType) type hasPermission:(Boolean) hasPermission;
+
 @end
 
 NS_ASSUME_NONNULL_END

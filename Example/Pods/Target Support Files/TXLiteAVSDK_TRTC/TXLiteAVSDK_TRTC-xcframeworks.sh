@@ -23,11 +23,11 @@ variant_for_slice()
   "TXLiteAVSDK_TRTC.xcframework/ios-arm64_x86_64-simulator")
     echo "simulator"
     ;;
-  "TXSoundTouch.xcframework/ios-arm64_armv7")
-    echo ""
-    ;;
   "TXSoundTouch.xcframework/ios-arm64_x86_64-simulator")
     echo "simulator"
+    ;;
+  "TXSoundTouch.xcframework/ios-arm64_armv7")
+    echo ""
     ;;
   "TXFFmpeg.xcframework/ios-arm64_armv7")
     echo ""
@@ -47,11 +47,11 @@ archs_for_slice()
   "TXLiteAVSDK_TRTC.xcframework/ios-arm64_x86_64-simulator")
     echo "arm64 x86_64"
     ;;
-  "TXSoundTouch.xcframework/ios-arm64_armv7")
-    echo "arm64 armv7"
-    ;;
   "TXSoundTouch.xcframework/ios-arm64_x86_64-simulator")
     echo "arm64 x86_64"
+    ;;
+  "TXSoundTouch.xcframework/ios-arm64_armv7")
+    echo "arm64 armv7"
     ;;
   "TXFFmpeg.xcframework/ios-arm64_armv7")
     echo "arm64 armv7"
@@ -142,6 +142,6 @@ install_xcframework() {
 }
 
 install_xcframework "${PODS_ROOT}/TXLiteAVSDK_TRTC/TXLiteAVSDK_TRTC/TXLiteAVSDK_TRTC.xcframework" "TXLiteAVSDK_TRTC/TRTC" "framework" "ios-arm64_armv7" "ios-arm64_x86_64-simulator"
-install_xcframework "${PODS_ROOT}/TXLiteAVSDK_TRTC/TXLiteAVSDK_TRTC/TXSoundTouch.xcframework" "TXLiteAVSDK_TRTC/TRTC" "framework" "ios-arm64_armv7" "ios-arm64_x86_64-simulator"
+install_xcframework "${PODS_ROOT}/TXLiteAVSDK_TRTC/TXLiteAVSDK_TRTC/TXSoundTouch.xcframework" "TXLiteAVSDK_TRTC/TRTC" "framework" "ios-arm64_x86_64-simulator" "ios-arm64_armv7"
 install_xcframework "${PODS_ROOT}/TXLiteAVSDK_TRTC/TXLiteAVSDK_TRTC/TXFFmpeg.xcframework" "TXLiteAVSDK_TRTC/TRTC" "framework" "ios-arm64_armv7" "ios-arm64_x86_64-simulator"
 

@@ -92,7 +92,7 @@
     TRTCRenderParams *params = [TRTCRenderParams new];
     TRTCVideoMirrorType type = _useMirro == YES ? TRTCVideoMirrorTypeEnable : TRTCVideoMirrorTypeDisable;
     params.mirrorType = type;
-    params.rotation = TRTCVideoRotation_90;
+    params.rotation = _useMirro == YES ? TRTCVideoRotation_270 : TRTCVideoRotation_90;
     [[TRTCCloud sharedInstance] setLocalRenderParams:params];
 }
 

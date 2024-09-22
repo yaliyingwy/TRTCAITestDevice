@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak) id<AITaskProtocol> aiTaskDelegate;
 @property (nonatomic, strong) NSDictionary *trtcParams;
+@property (nonatomic, copy) void(^completation)(BOOL isFinished);
 
 @end
 

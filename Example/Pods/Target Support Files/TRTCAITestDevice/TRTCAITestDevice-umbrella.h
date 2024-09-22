@@ -15,6 +15,7 @@
 #import "CommonDefines.h"
 #import "AIDetectProtocol.h"
 #import "AITaskProtocol.h"
+#import "AISdkManager.h"
 #import "AssetsUtil.h"
 #import "CountdownManager.h"
 #import "LanguageManager.h"

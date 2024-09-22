@@ -20,6 +20,8 @@
 @property (nonatomic, strong) UIView *goodView;
 @property (nonatomic, strong) GradientButton *countdownButton;
 
+@property (nonatomic, assign) Boolean nextClicked;
+
 @end
 
 @implementation NetworkGuideView
@@ -36,6 +38,7 @@
     self = [super init];
     if (self) {
         _status = Detecting; // 设置默认值为Detecting
+        _nextClicked = NO;
     }
     return self;
 }
@@ -184,6 +187,7 @@
     _goodView.hidden = status != Good;
     _poorView.hidden = status != Poor && status != Bad;
     _detectingView.hidden = status != Detecting;
+    _nextClicked = NO;
 }
 
 - (void)startCountdown {
@@ -196,11 +200,17 @@
 }
 
 
+
 - (void) goNext {
     NSLog(@"Button Pressed or Countdown Finished!");
     // Perform any action here
     // Optionally, restart the countdown or update the UI
+    static dispatch_once_t onceToken;
+    if (_nextClicked == YES) {
+        return;
+    }
     self.nextHandler();
+    _nextClicked = YES;
 }
 
 -(void) retry {
