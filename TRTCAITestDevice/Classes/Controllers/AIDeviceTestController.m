@@ -20,6 +20,12 @@
 
 typedef void (^SuccessCallback)(void);
 
+typedef NS_ENUM(NSInteger, CameraDetectStatus) {
+    CameraDetectStatusNone,
+    CameraDetectStatusPending,
+    CameraDetectStatusSucc
+};
+
 
 @interface AIDeviceTestController()
 
@@ -43,12 +49,16 @@ typedef void (^SuccessCallback)(void);
 @property (nonatomic, assign) AISdkManager *aiSdkManager;
 @property (nonatomic, strong) NSMutableArray<NSString *> *pendingMsg;
 
-@property (nonatomic, strong) NSTimer *volumeTimer;
+@property (nonatomic, strong) NSTimer *noneActionTimer;
+@property (nonatomic, assign) NSInteger noneActionDuration;
 @property (nonatomic, assign) NSTimeInterval volumeZeroDuration;
 
 @property (nonatomic, assign) Boolean volumeDetected;
-@property (nonatomic, assign) Boolean videoDetected;
+@property (nonatomic, assign) CameraDetectStatus cameraStatus;
 @property (nonatomic, assign) Boolean countdownTriggered;
+@property (nonatomic, assign) NSInteger retryCount;
+
+@property (nonatomic, assign) NSTimeInterval currentDetectStartTime;
 
 @end
 
@@ -63,8 +73,10 @@ typedef void (^SuccessCallback)(void);
         _pendingMsg = [NSMutableArray array];
         _volumeZeroDuration = 0;
         _volumeDetected = NO;
-        _videoDetected = NO;
+        _cameraStatus = CameraDetectStatusNone;
         _countdownTriggered = NO;
+        _noneActionDuration = -1;
+        _retryCount = 0;
         [self setupUI];
         [self setupConstraints];
         [[TRTCCloud sharedInstance] addDelegate:self];
@@ -75,10 +87,26 @@ typedef void (^SuccessCallback)(void);
     return self;
 }
 
+#pragma mark - 生命周期
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    [self startNoneActionTimer];
 
+}
+
+- (void) viewWillDisappear:(BOOL)animated {
+    [[TRTCCloud sharedInstance] exitRoom];
+    [_aiSdkManager removeObserver:self forKeyPath:@"aiSpeaking"];
+    [_aiSdkManager removeObserver:self forKeyPath:@"aiVolume"];
+    [_aiSdkManager removeObserver:self forKeyPath:@"userVolume"];
+    [self stopNoneActionTimer];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self checkPermissions];
 }
 
 #pragma mark - 处理ai说话关联逻辑
@@ -95,14 +123,11 @@ typedef void (^SuccessCallback)(void);
         NSNumber *newValue = change[NSKeyValueChangeNewKey];
         NSInteger volume = [newValue integerValue];
         self.cameraAndMicrophoneDetectView.resultView.volume = volume;
-        if (volume > 0) {
+        if (volume > 50) {
             if (_volumeDetected == NO) {
                 [self testMicrophoneResult: DetectResultSucc];
                 _volumeDetected = YES;
             }
-            [self resetVolumeTimer];
-        } else if (_volumeDetected == NO)  {
-            [self startVolumeTimer];
         }
     }
 }
@@ -115,51 +140,131 @@ typedef void (^SuccessCallback)(void);
     }
 }
 
-#pragma mark - 持续不说话检测
+#pragma mark - 检测视频
 
-- (void)startVolumeTimer {
-    if (!self.volumeTimer && self.volumeZeroDuration == 0) {
-        self.volumeTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(handleVolumeTimer) userInfo:nil repeats:YES];
+- (void)setCameraStatus:(CameraDetectStatus)cameraStatus {
+    if (_cameraStatus == cameraStatus) {
+        return;
+    }
+    _cameraStatus = cameraStatus;
+    if (_cameraStatus == CameraDetectStatusSucc) {
+        [self testCameraResult: DetectResultSucc];
     }
 }
 
-- (void)resetVolumeTimer {
-    if (self.volumeTimer != nil) {
-        [self.volumeTimer invalidate];
-        self.volumeTimer = nil;
+#pragma mark - 长时间未操作
+
+- (void)startNoneActionTimer {
+    if (self.noneActionTimer == nil) {
+        self.noneActionTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(handleNoneAction) userInfo:nil repeats:YES];
     }
 }
 
-- (void)handleVolumeTimer {
-    self.volumeZeroDuration += 1.0;
-
-    if (self.volumeZeroDuration >= 10.0 && self.volumeZeroDuration < 11.0) {
-        // 执行 10 秒后的操作
-        [self performActionAfterTenSeconds];
+-(void) handleNoneAction {
+    if (_noneActionDuration == -1 || _aiSdkManager.aiSpeaking == YES) {
+        return;
     }
-
-    if (self.volumeZeroDuration >= 20.0 && self.volumeZeroDuration < 21.0) {
-        // 执行 20 秒后的操作
-        [self performActionAfterTwentySeconds];
-        [self resetVolumeTimer];
+    _noneActionDuration += 1;
+    if (_currentDetectType == DetectLanguage) {
+        [self handleLanguageNoneAction: _noneActionDuration];
+        return;
+    }
+    
+    if (_currentDetectType == DetectNetwork) {
+        [self handleNetworkNoneAction: _noneActionDuration];
+        return;
+    }
+    
+    if (_currentDetectType == DetectMicrophone) {
+        [self handleMicrophoneNoneAction: _noneActionDuration];
     }
 }
 
-- (void)performActionAfterTenSeconds {
-    // 在这里执行 10 秒后的操作
-    [self controlAI:CodeDetectMicrophone10s success:^(NSString *taskID) {
-        NSLog(@"User volume is 0 for 10 seconds");
-    } maxTime:3];
-}
-
-- (void)performActionAfterTwentySeconds {
-    // 在这里执行 20 秒后的操作
+-(void) handleLanguageNoneAction: (NSInteger) duration {
     __weak typeof(self) weakSelf = self;
-    [self controlAI:CodeDetectMicrophone20s success:^(NSString *taskID) {
-        NSLog(@"User volume is 0 for 20 seconds");
-        [weakSelf testMicrophoneResult:DetectResultSucc];
-    } maxTime:3];
+    if (duration == 10) {
+        [self controlAI:CodeSelectLang10s success:^(NSString *taskID) {
+            NSLog(@"超过10s未选择");
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                if (weakSelf.currentDetectType == DetectLanguage) {
+                    [weakSelf.startView autoSelect];
+                    [weakSelf autoSkip:DetectLanguage];
+                }
+            });
+        } maxTime:3];
+    } else if (duration == 5) {
+        [self controlAI:CodeSelectLang5s success:^(NSString *taskID) {
+            NSLog(@"超过5s未选择");
+        } maxTime:3];
+    }
 }
+
+-(void) handleNetworkNoneAction: (NSInteger) duration {
+    __weak typeof(self) weakSelf = self;
+    if (duration == 5) {
+        [self controlAI:CodeDetectNetwork5s success:^(NSString *taskID) {
+            NSLog(@"超过5s未选择");
+            if (weakSelf.currentDetectType == DetectNetwork) {
+                weakSelf.networkDetectView.networkGuideView.nextHandler();
+                [weakSelf autoSkip:DetectNetwork];
+            }
+           
+        } maxTime:3];
+    }
+}
+
+-(void) handleMicrophoneNoneAction: (NSInteger) duration {
+    __weak typeof(self) weakSelf = self;
+    if (duration == 10) {
+        [self controlAI:CodeDetectMicrophone10s success:^(NSString *taskID) {
+            NSLog(@"超过10s未选择");
+            [weakSelf.cameraAndMicrophoneDetectView.guideView detectDone];
+            [weakSelf autoSkip:DetectMicrophone];
+        } maxTime:3];
+    } else if (duration == 5) {
+        [self controlAI:CodeDetectMicrophone5s success:^(NSString *taskID) {
+            NSLog(@"超过5s未选择");
+        } maxTime:3];
+    }
+}
+
+- (void) stopNoneActionTimer {
+    if (self.noneActionTimer != nil) {
+        [self.noneActionTimer invalidate];
+        self.noneActionTimer = nil;
+    }
+}
+
+//- (void)handleVolumeTimer {
+//    self.volumeZeroDuration += 1.0;
+//
+//    if (self.volumeZeroDuration >= 10.0 && self.volumeZeroDuration < 11.0) {
+//        // 执行 10 秒后的操作
+//        [self performActionAfterTenSeconds];
+//    }
+//
+//    if (self.volumeZeroDuration >= 20.0 && self.volumeZeroDuration < 21.0) {
+//        // 执行 20 秒后的操作
+//        [self performActionAfterTwentySeconds];
+//        [self resetVolumeTimer];
+//    }
+//}
+
+//- (void)performActionAfterTenSeconds {
+//    // 在这里执行 10 秒后的操作
+//    [self controlAI:CodeDetectMicrophone10s success:^(NSString *taskID) {
+//        NSLog(@"User volume is 0 for 10 seconds");
+//    } maxTime:3];
+//}
+
+//- (void)performActionAfterTwentySeconds {
+//    // 在这里执行 20 秒后的操作
+//    __weak typeof(self) weakSelf = self;
+//    [self controlAI:CodeDetectMicrophone20s success:^(NSString *taskID) {
+//        NSLog(@"User volume is 0 for 20 seconds");
+//        [weakSelf testMicrophoneResult:DetectResultSucc];
+//    } maxTime:3];
+//}
 
 #pragma mark - ui界面相关
 
@@ -191,12 +296,11 @@ typedef void (^SuccessCallback)(void);
 }
 
 -(void) setupConstraints {
-    CGFloat statusBarHeight = [UIApplication sharedApplication].statusBarFrame.size.height;
     [_navbarView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.height.equalTo(@51);
         make.left.equalTo(self.view.mas_left);
         make.right.equalTo(self.view.mas_right);
-        make.top.equalTo(self.view.mas_top).offset(statusBarHeight);
+        make.top.equalTo(self.view.mas_safeAreaLayoutGuideTop);
     }];
     
     [_logoView mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -318,7 +422,7 @@ typedef void (^SuccessCallback)(void);
     [self.aiTaskDelegate performAITask:StartAIConversation params:@{
             @"roomId": [_trtcParams valueForKey:@"roomId"],
             @"userId": [_trtcParams valueForKey:@"userId"],
-            @"language": [LanguageManager sharedManager].currentLanguage,
+            @"language": [LanguageManager sharedManager].originLangCode == nil ? @"en-US" : [LanguageManager sharedManager].originLangCode,
         } success:^(id  _Nonnull responseObject) {
             NSLog(@"startAIConversation: %@",  responseObject);
             [weakSelf.aiConversationView.chatView updateMessageList:@[[weakSelf.trtcParams valueForKey: @"welcomeMessage"]]];
@@ -329,45 +433,62 @@ typedef void (^SuccessCallback)(void);
 
 
 - (void) startLangSelect {
+    [self resetDuration];
     __weak typeof(self) weakSelf = self;
     [self controlAI:CodeSelectLang success:^(NSString *taskID) {
+        weakSelf.noneActionDuration = 0;
         weakSelf.startView.guideView.languageOptions = [weakSelf.trtcParams objectForKey:@"languageConfig"];
     } maxTime:3];
 }
 
 -(void) startNetworkTest {
+    [self resetDuration];
     __weak typeof(self) weakSelf = self;
     self.currentDetectType = DetectNetwork;
     [self controlAI:CodeDetectNetwork success:^(NSString *taskID) {
-        TRTCSpeedTestParams *params = [TRTCSpeedTestParams new];
-        // sdkAppID 为控制台中获取的实际应用的 AppID
-        params.sdkAppId = [[weakSelf.trtcParams valueForKey:@"sdkAppId"] intValue];;
-        params.userId =  [weakSelf.trtcParams valueForKey:@"userId"];
-        params.userSig = [weakSelf.trtcParams valueForKey:@"userSig"];
-        // 预期的上行带宽（kbps，取值范围： 10 ～ 5000，为 0 时不测试）
-    //    params.expectedUpBandwidth = 5000;
-        // 预期的下行带宽（kbps，取值范围： 10 ～ 5000，为 0 时不测试）
-    //    params.expectedDownBandwidth = 5000;
-        int ret =  [[TRTCCloud sharedInstance] startSpeedTest:params];
-        NSLog(@"startSpeedTest: %d", ret);
-        [weakSelf.networkDetectView.networkResultView startProgressTimer];
+        [weakSelf doNetworkTest];
     } maxTime:3];
 
 }
 
+-(void) doNetworkTest {
+    _noneActionDuration = -1;
+    TRTCSpeedTestParams *params = [TRTCSpeedTestParams new];
+    // sdkAppID 为控制台中获取的实际应用的 AppID
+    params.sdkAppId = [[self.trtcParams valueForKey:@"sdkAppId"] intValue];;
+    params.userId =  [self.trtcParams valueForKey:@"userId"];
+    params.userSig = [self.trtcParams valueForKey:@"userSig"];
+    // 预期的上行带宽（kbps，取值范围： 10 ～ 5000，为 0 时不测试）
+//    params.expectedUpBandwidth = 5000;
+    // 预期的下行带宽（kbps，取值范围： 10 ～ 5000，为 0 时不测试）
+//    params.expectedDownBandwidth = 5000;
+    int ret =  [[TRTCCloud sharedInstance] startSpeedTest:params];
+    NSLog(@"startSpeedTest: %d", ret);
+    [self.networkDetectView.networkResultView startProgressTimer];
+}
+
 - (void) startCameraTest {
+    [self resetDuration];
     __weak typeof(self) weakSelf = self;
+    _noneActionDuration = -1;
+    self.currentDetectType = DetectCamera;
+    [self.cameraAndMicrophoneDetectView.resultView toggleVideo:YES];
     [self controlAI:CodeDetectCamera success:^(NSString *taskID) {
-        weakSelf.currentDetectType = DetectCamera;
-        [weakSelf.cameraAndMicrophoneDetectView.resultView toggleVideo:YES];
+        if (weakSelf.cameraStatus == CameraDetectStatusPending) {
+            weakSelf.cameraStatus = CameraDetectStatusSucc;
+        } else {
+            weakSelf.cameraStatus = CameraDetectStatusPending;
+        }
     } maxTime:3];
 }
 
 -(void) startMicrophoneTest {
+    [self resetDuration];
     __weak typeof(self) weakSelf = self;
 //    [self controlAI:CodeDetectMicrophone success:^(NSString *taskID) {
 //
 //    } maxTime:3];
+    _noneActionDuration = 0;
     self.currentDetectType = DetectMicrophone;
     [self.cameraAndMicrophoneDetectView.guideView play];
     [[TRTCCloud sharedInstance] muteLocalAudio:NO];
@@ -377,6 +498,7 @@ typedef void (^SuccessCallback)(void);
 }
 
 -(void) finishTest {
+
     [self dismissViewControllerAnimated:YES completion:nil];
     if (self.completation) {
         self.completation(YES);
@@ -386,9 +508,12 @@ typedef void (^SuccessCallback)(void);
 #pragma mark - trtc 代理回调
 
 - (void)onSendFirstLocalVideoFrame:(TRTCVideoStreamType)streamType {
-    if (_videoDetected == NO) {
-        [self testCameraResult: DetectResultSucc];
-        _videoDetected = YES;
+    if (_cameraStatus == CameraDetectStatusNone) {
+        self.cameraStatus = CameraDetectStatusPending;
+        return;
+    }
+    if (_cameraStatus == CameraDetectStatusPending) {
+        self.cameraStatus = CameraDetectStatusSucc;
     }
 }
 
@@ -396,19 +521,31 @@ typedef void (^SuccessCallback)(void);
 - (void)onSpeedTestResult:(TRTCSpeedTestResult *)result {
     NSLog(@"onSpeedTestResult: %@", result);
     __weak typeof(self) weakSelf = self;
+   
     ControlAICode code;
     if (result.quality == TRTCQuality_Excellent || result.quality == TRTCQuality_Good) {
         _networkDetectView.status = Good;
         code = CodeDetectNetworkGood;
     } else if (result.quality == TRTCQuality_Poor) {
         _networkDetectView.status = Poor;
-        code = CodeDetectNetworkPoor;
+//        code = CodeDetectNetworkPoor;
+        code = _retryCount == 0 ?  CodeDetectNetworkPoor : CodeDetectNetworkRetryFail;
     } else {
         _networkDetectView.status = Bad;
-        code = CodeDetectNetworkBad;
+//        code = CodeDetectNetworkBad;
+        code = _retryCount == 0 ?  CodeDetectNetworkBad : CodeDetectNetworkRetryFail;
+    }
+    AIDeviceDetectResult ret;
+    if (result.quality == TRTCQuality_Bad || result.quality == TRTCQuality_Vbad || result.quality == TRTCQuality_Down) {
+        ret = DetectResultFail;
+    } else {
+        ret = DetectResultSucc;
     }
     
+    [self reportResult:DetectNetwork result:ret extraInfo:result];
+    
     [self controlAI:code success:^(NSString *taskID) {
+        weakSelf.noneActionDuration = 0;
         if (code == CodeDetectNetworkGood) {
             if (weakSelf.countdownTriggered == NO) {
                 [weakSelf.networkDetectView.networkGuideView startCountdown];
@@ -424,7 +561,9 @@ typedef void (^SuccessCallback)(void);
 - (void)onDetectDone:(AIDetectPage)page {
     
     __weak typeof(self) weakSelf = self;
+    _noneActionDuration = -1;
     if (page == DectectLanguagePage) {
+        [self reportResult:DetectLanguage result:DetectResultSucc extraInfo:nil];
         [self setupNetworkView];
         if (![[LanguageManager sharedManager].currentLanguage isEqualToString: _defaultLanguage]) {
             [self updateAIConversion:^{
@@ -443,7 +582,7 @@ typedef void (^SuccessCallback)(void);
 }
 
 - (void)onDetectResult:(AIDeviceDetectType)type result:(AIDeviceDetectResult)result {
-
+    _noneActionDuration = -1;
     if (type == DetectCamera) {
         [self testCameraResult:result];
     }
@@ -457,6 +596,7 @@ typedef void (^SuccessCallback)(void);
     ControlAICode code;
     __weak typeof(self) weakSelf = self;
     code = result == DetectResultSucc ? CodeDetectCameraSuccess : CodeDetectCameraNoPermission;
+    [self reportResult:DetectCamera result:result extraInfo:[PermissionManager getTestFailureMsg:AVMediaTypeVideo]];
     [self controlAI:code success:^(NSString *taskID) {
         [weakSelf startMicrophoneTest];
     } maxTime:3];
@@ -464,18 +604,28 @@ typedef void (^SuccessCallback)(void);
 
 -(void) testMicrophoneResult:(AIDeviceDetectResult) result {
     ControlAICode code;
+    _noneActionDuration = -1;
     __weak typeof(self) weakSelf = self;
-    [[TRTCCloud sharedInstance] muteLocalAudio:YES];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [[TRTCCloud sharedInstance] muteLocalAudio:YES];
+    });
+   
     code = result == DetectResultSucc ? CodeDetectMicrophoneSuccess : CodeDetectMicrophoneNoPermission;
+    [self reportResult:DetectMicrophone result:result extraInfo:[PermissionManager getTestFailureMsg:AVMediaTypeAudio]];
     [self controlAI:code success:^(NSString *taskID) {
         [weakSelf.cameraAndMicrophoneDetectView.guideView detectDone];
+        [weakSelf controlAI:CodeDetectMicrophoneFinish success:^(NSString *taskID) {
+                    
+        } maxTime:3];
+        
     } maxTime:3];
 }
-
+ 
 -(void) onDetectRetry:(AIDetectPage)type {
     if (type == DetectNetwork) {
         _networkDetectView.status = Detecting;
-        [self startNetworkTest];
+        _retryCount += 1;
+        [self doNetworkTest];
     }
 }
 
@@ -491,6 +641,7 @@ typedef void (^SuccessCallback)(void);
             NSString *commandMessage = [data objectForKey:@"commandMessage"];
             if (commandMessage != nil && commandMessage.length > 0) {
                 [weakSelf.pendingMsg addObject: commandMessage];
+//                [weakSelf.pendingMsg addObject: [commandMessage stringByAppendingFormat:@"%ld", code]];
             }
         [weakSelf.aiSdkManager addAISpeakDone:[NSString stringWithFormat:@"%ld", code] callback:success maxTime: maxTime];
 
@@ -524,17 +675,7 @@ typedef void (^SuccessCallback)(void);
 }
 */
 
-- (void) viewWillDisappear:(BOOL)animated {
-    [[TRTCCloud sharedInstance] exitRoom];
-    [_aiSdkManager removeObserver:self forKeyPath:@"aiSpeaking"];
-    [_aiSdkManager removeObserver:self forKeyPath:@"aiVolume"];
-    [_aiSdkManager removeObserver:self forKeyPath:@"userVolume"];
-}
 
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    [self checkPermissions];
-}
 
 #pragma mark - 权限检查
 
@@ -571,15 +712,15 @@ typedef void (^SuccessCallback)(void);
 }
 
 -(void)noAuthorizationToSet:(BOOL)isMic {
-    NSString *title = NSLocalizedString(@"权限获取", nil);
-    NSString *message = isMic?NSLocalizedString(@"请前往设置打开麦克风权限" , nil):NSLocalizedString(@"请前往设置打开摄像头权限" , nil);
+    NSString *title = [[LanguageManager sharedManager] localizedStringForKey:@"permission.title"];
+    NSString *message = isMic? [[LanguageManager sharedManager] localizedStringForKey:@"permission.microphone"] : [[LanguageManager sharedManager] localizedStringForKey:@"permission.camera"];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
 
     NSMutableAttributedString *AttributedTitle = [[NSMutableAttributedString alloc] initWithString:title];
     [AttributedTitle addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0, [[AttributedTitle string] length])];
     [alert setValue:AttributedTitle forKey:@"attributedTitle"];
  
-    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"去设置", nil)  style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+    [alert addAction:[UIAlertAction actionWithTitle:[[LanguageManager sharedManager] localizedStringForKey:@"permission.setting"] style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         NSURL * appSettingURL = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
         if ([[UIApplication sharedApplication] canOpenURL:appSettingURL]){
             [[UIApplication sharedApplication] openURL:appSettingURL options:@{UIApplicationOpenURLOptionsSourceApplicationKey : @YES} completionHandler:^(BOOL success) {
@@ -589,6 +730,29 @@ typedef void (^SuccessCallback)(void);
         }];
     }]];
     [self presentViewController:alert animated:YES completion:nil];
+}
+
+#pragma mark - 耗时统计
+- (void) resetDuration {
+    _currentDetectStartTime = [[NSDate date] timeIntervalSince1970];
+}
+
+- (NSTimeInterval) calDuration {
+    return [[NSDate date] timeIntervalSince1970] - _currentDetectStartTime;
+}
+
+#pragma mark - 数据上报
+
+- (void) reportResult:(AIDeviceDetectType) type result:(AIDeviceDetectResult) result extraInfo:(id) extraInfo {
+    if (self.aiTaskDelegate != nil && [self.aiTaskDelegate respondsToSelector:@selector(reportResult:result:duration:extraInfo:)]) {
+        [self.aiTaskDelegate reportResult:type result:result duration:[self calDuration] extraInfo:extraInfo];
+    }
+}
+
+- (void) autoSkip:(AIDeviceDetectType) type {
+    if (self.aiTaskDelegate != nil && [self.aiTaskDelegate respondsToSelector:@selector(autoSkip:)]) {
+        [self.aiTaskDelegate autoSkip:type];
+    }
 }
 
 @end

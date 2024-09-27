@@ -18,7 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
                                    failure:(void (^)(NSError *error))failure;
 
 @optional
-- (void) reportResult:(AIDeviceDetectType) type result:(int) result duration:(int) duration;
+- (void) reportResult:(AIDeviceDetectType) type result:(AIDeviceDetectResult) result duration:(int) duration extraInfo:(id) extraInfo;
+@optional
+- (void) autoSkip:(AIDeviceDetectType) type;
 
 @optional
 -(void) onDetectPermission:(AIDeviceDetectType) type hasPermission:(Boolean) hasPermission;

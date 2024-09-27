@@ -15,6 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) LanguageGuideView *guideView;
 
+- (void) autoSelect;
+
 @end
 
 NS_ASSUME_NONNULL_END

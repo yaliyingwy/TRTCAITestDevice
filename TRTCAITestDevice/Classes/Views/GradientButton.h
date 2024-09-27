@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface GradientButton : UIButton
 @property (nonatomic, strong) NSArray *gradientColors;
 @property (nonatomic, strong) UIColor *disableColor;
-
+@property (nonatomic, assign) BOOL isDisabled; 
 @end
 
 NS_ASSUME_NONNULL_END

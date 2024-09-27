@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <AVFoundation/AVFoundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -15,6 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 +(BOOL)isCameraAvailable:(void (^)(BOOL granted))handler;
 //麦克风是否可用
 +(BOOL)isMicphoneAvailable:(void (^)(BOOL granted))handler;
+
++ (NSString *)getTestFailureMsg:(AVMediaType)mediaType;
 
 @end
 

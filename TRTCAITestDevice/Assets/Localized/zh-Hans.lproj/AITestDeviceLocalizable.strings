@@ -16,3 +16,8 @@
 "ai.welcome" = "欢迎来到LingoAce课堂！";
 "ai.select.language" = "请选择您的语言";
 "ai.guide" = "操作指南";
+"ai.enter" = "进入教室";
+"permission.title" = "权限获取";
+"permission.microphone" = "请前往设置打开麦克风权限";
+"permission.camera" = "请前往设置打开摄像头权限";
+"permission.setting" = "去设置";

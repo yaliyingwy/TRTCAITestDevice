@@ -115,10 +115,10 @@
     }];
     
     GradientButton *nextButton = [GradientButton new];
-    nextButton.enabled = NO;
+    nextButton.isDisabled = YES;
     NSString *nextText = [[LanguageManager sharedManager] localizedStringForKey:@"ai.button.next"];
-    [nextButton setTitle:nextText forState:UIControlStateDisabled];
-    [nextButton setTitleColor:[UIColor colorWithHexString:@"#5D5F7B"] forState:UIControlStateDisabled];
+    [nextButton setTitle:nextText forState:UIControlStateNormal];
+    [nextButton setTitleColor:[UIColor colorWithHexString:@"#5D5F7B"] forState:UIControlStateNormal];
     [nextButton addTarget:self action:@selector(goNext) forControlEvents:UIControlEventTouchUpInside];
     
     [_poorView addSubview:nextButton];
@@ -203,9 +203,6 @@
 
 - (void) goNext {
     NSLog(@"Button Pressed or Countdown Finished!");
-    // Perform any action here
-    // Optionally, restart the countdown or update the UI
-    static dispatch_once_t onceToken;
     if (_nextClicked == YES) {
         return;
     }

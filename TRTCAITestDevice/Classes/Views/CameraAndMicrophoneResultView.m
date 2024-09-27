@@ -92,7 +92,7 @@
     TRTCRenderParams *params = [TRTCRenderParams new];
     TRTCVideoMirrorType type = _useMirro == YES ? TRTCVideoMirrorTypeEnable : TRTCVideoMirrorTypeDisable;
     params.mirrorType = type;
-    params.rotation = _useMirro == YES ? TRTCVideoRotation_270 : TRTCVideoRotation_90;
+    params.rotation = [self getRotation];
     [[TRTCCloud sharedInstance] setLocalRenderParams:params];
 }
 
@@ -101,11 +101,31 @@
     _volumeView.volume = volume;
 }
 
+-(TRTCVideoRotation) getRotation {
+    UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
+
+    if (orientation == UIDeviceOrientationPortrait) {
+        NSLog(@"Portrait");
+        return TRTCVideoRotation_0;
+    } else if (orientation == UIDeviceOrientationPortraitUpsideDown) {
+        NSLog(@"Portrait Upside Down");
+        return TRTCVideoRotation_180;
+    } else if (orientation == UIDeviceOrientationLandscapeLeft) {
+        return _useMirro == YES ?  TRTCVideoRotation_270 : TRTCVideoRotation_90;
+    } else if (orientation == UIDeviceOrientationLandscapeRight) {
+        NSLog(@"Landscape Right");
+        return _useMirro == YES ? TRTCVideoRotation_90 :  TRTCVideoRotation_270;
+    }  else {
+        NSLog(@"Unknown");
+        return TRTCVideoRotation_0;
+    }
+}
+
 - (void)toggleVideo:(Boolean)on {
     if (on == YES) {
 
         TRTCRenderParams *params = [TRTCRenderParams new];
-        params.rotation = TRTCVideoRotation_90;
+        params.rotation = [self getRotation];
         TRTCVideoMirrorType type = _useMirro == YES ? TRTCVideoMirrorTypeEnable : TRTCVideoMirrorTypeDisable;
         params.mirrorType = type;
         [[TRTCCloud sharedInstance] setLocalRenderParams: params];

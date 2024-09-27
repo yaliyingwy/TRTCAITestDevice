@@ -9,9 +9,10 @@ typedef NS_ENUM(NSInteger, NetworkDetectStatus) {
 typedef NS_ENUM(NSInteger, ControlAICode) {
     CodeNone = 0,
     CodeSelectLang = 1001,
-    CodeSelectLang10s = 1002,
-    CodeSelectLang20s = 1003,
+    CodeSelectLang5s = 1002,
+    CodeSelectLang10s = 1003,
     CodeDetectNetwork = 2002,
+    CodeDetectNetwork5s = 2007,
     CodeDetectNetworkGood = 2003,
     CodeDetectNetworkPoor = 2004,
     CodeDetectNetworkBad = 2005,
@@ -21,9 +22,10 @@ typedef NS_ENUM(NSInteger, ControlAICode) {
     CodeDetectCameraNoPermission = 3003,
     CodeDetectMicrophone = 4101,
     CodeDetectMicrophoneSuccess = 4101,
-    CodeDetectMicrophone10s = 4102,
-    CodeDetectMicrophone20s = 4103,
+    CodeDetectMicrophone5s = 4102,
+    CodeDetectMicrophone10s = 4103,
     CodeDetectMicrophoneNoPermission = 4004,
+    CodeDetectMicrophoneFinish = 4014
 };
 
 
@@ -45,6 +47,7 @@ typedef NS_ENUM(NSInteger, AIDeviceDetectType) {
 
 typedef NS_ENUM(NSInteger, AIDeviceDetectResult) {
     DetectResultSucc,
+    DetectResultFail,
     DetectResultNoPermission,
 };
 

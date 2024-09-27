@@ -29,10 +29,22 @@
             (__bridge id)[UIColor colorWithHexString:@"#A87EF3"].CGColor
         ];
         _disableColor = [UIColor colorWithHexString:@"#E0E0E8"];
-        [self addObserver:self forKeyPath:@"enabled" options:NSKeyValueObservingOptionNew context:nil];
+        self.isDisabled = NO; // 默认不是禁用状态
     }
     return self;
 }
+
+- (void)setIsDisabled:(BOOL)isDisabled {
+    _isDisabled = isDisabled;
+    [self setNeedsDisplay];
+}
+
+- (void)setEnabled:(BOOL)enabled {
+    [super setEnabled:enabled];
+    self.isDisabled = !enabled; // 根据enabled属性设置内部状态
+}
+
+
 
 - (void)setGradientColors:(NSArray *)gradientColors {
     _gradientColors = gradientColors;
@@ -44,24 +56,18 @@
     [self setNeedsDisplay];
 }
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
-    if ([keyPath isEqualToString:@"enabled"]) {
-        [self setNeedsDisplay];
-    }
-}
-
-
 - (void)drawRect:(CGRect)rect {
     [super drawRect:rect];
     
     // 移除之前的渐变层（如果有）
-    [[self.layer sublayers] enumerateObjectsUsingBlock:^(CALayer * _Nonnull layer, NSUInteger idx, BOOL * _Nonnull stop) {
+    NSArray *sublayersCopy = [self.layer.sublayers copy];
+    [sublayersCopy enumerateObjectsUsingBlock:^(CALayer * _Nonnull layer, NSUInteger idx, BOOL * _Nonnull stop) {
         if ([layer isKindOfClass:[CAGradientLayer class]]) {
             [layer removeFromSuperlayer];
         }
     }];
     
-    if (self.enabled) {
+    if (!self.isDisabled) {
         // 创建渐变层
         CAGradientLayer *gradientLayer = [CAGradientLayer layer];
         gradientLayer.frame = self.bounds;
@@ -85,10 +91,6 @@
         disableLayer.cornerRadius = rect.size.height / 2;
         [self.layer insertSublayer:disableLayer atIndex:0];
     }
-}
-
-- (void)dealloc {
-    [self removeObserver:self forKeyPath:@"enabled"];
 }
 
 @end

@@ -16,3 +16,8 @@
 "ai.welcome" = "Bienvenue dans la salle de classe LingoAce！";
 "ai.select.language" = "Veuillez sélectionner votre langue";
 "ai.guide" = "Guide d'utilisation";
+"ai.enter" = "Entrer dans la classe.";
+"permission.title" = "Accéder aux permissions";
+"permission.microphone" = "Veuillez accéder aux paramètres pour activer les permissions du micro";
+"permission.camera" = "Veuillez accéder aux paramètres pour activer les permissions de la caméra";
+"permission.setting" = "Accéder au paramètre";

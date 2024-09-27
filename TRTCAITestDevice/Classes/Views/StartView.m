@@ -61,7 +61,12 @@
     }];
 }
 
-
+- (void)autoSelect {
+    [[LanguageManager sharedManager] setCurrentLanguage:@"en-US"];
+    if (self.detectDelegate) {
+        [self.detectDelegate onDetectDone: DectectLanguagePage];
+    }
+}
 
 
 @end

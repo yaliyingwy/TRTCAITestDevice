@@ -6,7 +6,7 @@
 //
 
 #import "PermissionManager.h"
-#import <AVFoundation/AVFoundation.h>
+
 
 @implementation PermissionManager
 
@@ -82,6 +82,26 @@
             break;
     }
     return NO;
+}
+
++ (NSString *)getTestFailureMsg:(AVMediaType)mediaType {
+    switch ([AVCaptureDevice authorizationStatusForMediaType:mediaType]) {
+        case AVAuthorizationStatusNotDetermined:
+            return @"用户尚未授予或拒绝该权限";
+            break;
+        case AVAuthorizationStatusRestricted:
+            return @"不允许用户访问媒体捕获设备";
+            break;
+        case AVAuthorizationStatusDenied:
+            return @"用户已经明确拒绝了应用访问捕获设备";
+            break;
+        case AVAuthorizationStatusAuthorized:
+            return @"";
+            break;
+        default:
+            return @"初始化失败";
+            break;
+    }
 }
 
 @end

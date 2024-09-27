@@ -72,7 +72,7 @@
     _doneButton = [GradientButton new];
     _doneButton.hidden = YES;
 //    _countdownButton.tintColor = [UIColor redColor];
-    NSString *text = [[LanguageManager sharedManager] localizedStringForKey:@"ai.button.next"];
+    NSString *text = [[LanguageManager sharedManager] localizedStringForKey:@"ai.enter"];
     [_doneButton setTitle:text forState:UIControlStateNormal];
     [_doneButton addTarget:self action:@selector(goNext) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:_doneButton];
