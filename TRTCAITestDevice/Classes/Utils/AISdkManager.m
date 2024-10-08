@@ -41,6 +41,7 @@
 }
 
 - (void)muteLocalAudio {
+//    [[TRTCCloud sharedInstance] callExperimentalAPI: @"{\"api\":\"setLocalAudioMuteAction\",\"params\":{\"volumeEvaluation\":1}}"];
     [[TRTCCloud sharedInstance] callExperimentalAPI: @"{\"api\":\"setLocalAudioMuteMode\",\"params\":{\"mode\":0}}"];
     [[TRTCCloud sharedInstance] muteLocalAudio:YES];
 }
