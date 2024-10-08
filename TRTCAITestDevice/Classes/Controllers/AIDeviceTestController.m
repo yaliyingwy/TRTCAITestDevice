@@ -138,10 +138,6 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
         [self.aiConversationView.chatView updateMessageList: [_pendingMsg copy]];
         [_pendingMsg removeAllObjects];
     }
-    
-    if (isSpeaking == YES && _currentDetectType == DetectMicrophone && _volumeDetected == YES) {
-        [[TRTCCloud sharedInstance] muteLocalAudio:YES];
-    }
 }
 
 #pragma mark - 检测视频
@@ -610,7 +606,7 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
     ControlAICode code;
     _noneActionDuration = -1;
     __weak typeof(self) weakSelf = self;
-   
+    [[TRTCCloud sharedInstance] muteLocalAudio:YES];
     code = result == DetectResultSucc ? CodeDetectMicrophoneSuccess : CodeDetectMicrophoneNoPermission;
     [self reportResult:DetectMicrophone result:result extraInfo:[PermissionManager getTestFailureMsg:AVMediaTypeAudio]];
     [self controlAI:code success:^(NSString *taskID) {
