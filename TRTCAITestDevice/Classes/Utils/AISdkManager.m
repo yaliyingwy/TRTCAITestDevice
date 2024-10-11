@@ -60,7 +60,7 @@
         self.lastTaskId = taskID;
     }
     
-    if (maxTime > 0) {
+    if (maxTime == 0) {
         return;
     }
     

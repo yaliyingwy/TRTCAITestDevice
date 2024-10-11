@@ -1,6 +1,0 @@
-framework module TRTCAITestDevice {
-  umbrella header "TRTCAITestDevice-umbrella.h"
-
-  export *
-  module * { export * }
-}

@@ -191,11 +191,11 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
                     [weakSelf autoSkip:DetectLanguage];
                 }
             });
-        } maxTime:3];
+        } maxTime:6];
     } else if (duration == 5) {
         [self controlAI:CodeSelectLang5s success:^(NSString *taskID) {
             NSLog(@"超过5s未选择");
-        } maxTime:3];
+        } maxTime:6];
     }
 }
 
@@ -209,7 +209,7 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
                 [weakSelf autoSkip:DetectNetwork];
             }
            
-        } maxTime:3];
+        } maxTime:6];
     }
 }
 
@@ -220,11 +220,11 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
             NSLog(@"超过10s未选择");
             [weakSelf.cameraAndMicrophoneDetectView.guideView detectDone];
             [weakSelf autoSkip:DetectMicrophone];
-        } maxTime:3];
+        } maxTime:6];
     } else if (duration == 5) {
         [self controlAI:CodeDetectMicrophone5s success:^(NSString *taskID) {
             NSLog(@"超过5s未选择");
-        } maxTime:3];
+        } maxTime:6];
     }
 }
 
@@ -438,7 +438,7 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
     [self controlAI:CodeSelectLang success:^(NSString *taskID) {
         weakSelf.noneActionDuration = 0;
         weakSelf.startView.guideView.languageOptions = [weakSelf.trtcParams objectForKey:@"languageConfig"];
-    } maxTime:3];
+    } maxTime:6];
 }
 
 -(void) startNetworkTest {
@@ -447,7 +447,7 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
     self.currentDetectType = DetectNetwork;
     [self controlAI:CodeDetectNetwork success:^(NSString *taskID) {
         [weakSelf doNetworkTest];
-    } maxTime:3];
+    } maxTime:6];
 
 }
 
@@ -479,7 +479,7 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
         } else {
             weakSelf.cameraStatus = CameraDetectStatusPending;
         }
-    } maxTime:3];
+    } maxTime:6];
 }
 
 -(void) startMicrophoneTest {
@@ -553,7 +553,7 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
             }
             
         }
-    } maxTime:3];
+    } maxTime:6];
 }
 
 #pragma mark - 设备检测代理回调
@@ -599,7 +599,7 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
     [self reportResult:DetectCamera result:result extraInfo:[PermissionManager getTestFailureMsg:AVMediaTypeVideo]];
     [self controlAI:code success:^(NSString *taskID) {
         [weakSelf startMicrophoneTest];
-    } maxTime:3];
+    } maxTime:6];
 }
 
 -(void) testMicrophoneResult:(AIDeviceDetectResult) result {
@@ -612,10 +612,10 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
     [self controlAI:code success:^(NSString *taskID) {
         [weakSelf.cameraAndMicrophoneDetectView.guideView detectDone];
         [weakSelf controlAI:CodeDetectMicrophoneFinish success:^(NSString *taskID) {
-                    
-        } maxTime:3];
+            [weakSelf.cameraAndMicrophoneDetectView.guideView startCountdown];
+        } maxTime:6];
         
-    } maxTime:3];
+    } maxTime:6];
 }
  
 -(void) onDetectRetry:(AIDetectPage)type {

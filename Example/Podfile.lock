@@ -1,9 +1,9 @@
 PODS:
   - lottie-ios (2.5.3)
   - Masonry (1.1.0)
-  - TRTCAITestDevice/Core (0.1.0):
+  - TRTCAITestDevice/Core (0.1.2):
     - Masonry (= 1.1.0)
-  - TRTCAITestDevice/WithLib (0.1.0):
+  - TRTCAITestDevice/WithLib (0.1.2):
     - lottie-ios (~> 2.5.3)
     - TXLiteAVSDK_TRTC
   - TXLiteAVSDK_TRTC (12.0.16301):
@@ -27,9 +27,9 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   lottie-ios: a50d5c0160425cd4b01b852bb9578963e6d92d31
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
-  TRTCAITestDevice: 65479569143942090e595dcd1630dc90a4b9c767
+  TRTCAITestDevice: 9f833fa215d238749deaa10ab7a4c51fc15360bf
   TXLiteAVSDK_TRTC: c0e5973bb8fab0132f9651065bb5486f3aa8eae0
 
 PODFILE CHECKSUM: a913c2f3c2a658eb391d5d5746faaaa8883027de
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.15.2

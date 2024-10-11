@@ -12,11 +12,13 @@
 #import "UIColor+Util.h"
 #import "LanguageManager.h"
 #import "AnimationView.h"
+#import "CountdownManager.h"
 
 @interface CameraAndMicrophoneGuideView()
 @property (strong, nonatomic) UIView *sayHiView;
 @property (strong, nonatomic) AnimationView *animationView;
 @property (nonatomic, strong) GradientButton *doneButton;
+@property (assign, nonatomic) Boolean nextClicked;
 
 @end
 
@@ -78,9 +80,9 @@
     [self addSubview:_doneButton];
     
     [_doneButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(self.mas_centerX);
-        make.centerY.equalTo(self.mas_centerY);
-        make.width.equalTo(@196);
+        make.left.equalTo(self.mas_centerX);
+        make.centerY.equalTo(self.mas_centerY).offset(42);
+        make.width.equalTo(@210);
         make.height.equalTo(@54);
     }];
 }
@@ -96,9 +98,24 @@
 }
 
 - (void) goNext {
-    if (self.nextHandler != nil) {
-        self.nextHandler();
+    NSLog(@"Button Pressed or Countdown Finished!");
+    if (_nextClicked == YES || self.nextHandler == nil) {
+        return;
     }
+    self.nextHandler();
+    _nextClicked = YES;
 }
+
+- (void)startCountdown {
+    NSString *text = [[LanguageManager sharedManager] localizedStringForKey:@"ai.enter"];
+    [[CountdownManager sharedManager] startCountdownWithDuration:5 updateBlock:^(NSInteger secondsLeft) {
+        [self.doneButton setTitle:[NSString stringWithFormat:@"%@(%ld)", text, (long)secondsLeft] forState:UIControlStateNormal];
+    } completion:^{
+        [self goNext];  // Call the same action as button press on completion
+    }];
+}
+
+
+
 
 @end

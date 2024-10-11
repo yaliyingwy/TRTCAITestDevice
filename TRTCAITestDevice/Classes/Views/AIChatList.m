@@ -90,6 +90,12 @@
 - (void)updateMessageList:(NSArray<NSString *> *)newMessages {
     [self.messageList addObjectsFromArray:newMessages];
     [self.tableView reloadData];
+    // 滚动到最后一行
+    if (self.messageList.count > 0) {
+        NSIndexPath *lastIndexPath = [NSIndexPath indexPathForRow:self.messageList.count - 1 inSection:0];
+        [self.tableView scrollToRowAtIndexPath:lastIndexPath atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+    }
+
 }
 
 @end

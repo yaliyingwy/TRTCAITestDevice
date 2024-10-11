@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void) detectDone;
 -(void) play;
-
+- (void)startCountdown;
 @end
 
 NS_ASSUME_NONNULL_END
