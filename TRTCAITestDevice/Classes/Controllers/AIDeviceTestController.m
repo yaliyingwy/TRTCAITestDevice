@@ -16,7 +16,7 @@
 #import "LanguageManager.h"
 #import "CommonDefines.h"
 #import "AISdkManager.h"
-#import "PermissionManager.h"
+#import "AIPermissionManager.h"
 
 typedef void (^SuccessCallback)(void);
 
@@ -596,7 +596,7 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
     ControlAICode code;
     __weak typeof(self) weakSelf = self;
     code = result == DetectResultSucc ? CodeDetectCameraSuccess : CodeDetectCameraNoPermission;
-    [self reportResult:DetectCamera result:result extraInfo:[PermissionManager getTestFailureMsg:AVMediaTypeVideo]];
+    [self reportResult:DetectCamera result:result extraInfo:[AIPermissionManager getTestFailureMsg:AVMediaTypeVideo]];
     [self controlAI:code success:^(NSString *taskID) {
         [weakSelf startMicrophoneTest];
     } maxTime:6];
@@ -608,7 +608,7 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
     __weak typeof(self) weakSelf = self;
     [[TRTCCloud sharedInstance] muteLocalAudio:YES];
     code = result == DetectResultSucc ? CodeDetectMicrophoneSuccess : CodeDetectMicrophoneNoPermission;
-    [self reportResult:DetectMicrophone result:result extraInfo:[PermissionManager getTestFailureMsg:AVMediaTypeAudio]];
+    [self reportResult:DetectMicrophone result:result extraInfo:[AIPermissionManager getTestFailureMsg:AVMediaTypeAudio]];
     [self controlAI:code success:^(NSString *taskID) {
         [weakSelf.cameraAndMicrophoneDetectView.guideView detectDone];
         [weakSelf controlAI:CodeDetectMicrophoneFinish success:^(NSString *taskID) {
@@ -681,7 +681,7 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
 //    if (UserSingleton.role != PPUserRoleStu) {
 //        return;
 //    }
-    if ([PermissionManager isCameraAvailable:^(BOOL granted) {
+    if ([AIPermissionManager isCameraAvailable:^(BOOL granted) {
         if (!granted) {
             [self noAuthorizationToSet:NO];
         }
@@ -693,7 +693,7 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
     }else{
         NSLog(@"摄像头待获取");
     }
-    if ([PermissionManager isMicphoneAvailable:^(BOOL granted) {
+    if ([AIPermissionManager isMicphoneAvailable:^(BOOL granted) {
         if (!granted) {
             [self noAuthorizationToSet:YES];
             //[LAEventLog uploadEventLogId:LAEventMicphoneOpenFail content:@"没有麦克风权限"];

@@ -1,5 +1,5 @@
 //
-//  PermissionManager.h
+//  AIPermissionManager.h
 //  TRTCAITestDevice
 //
 //  Created by ywen on 2024/9/24.
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface PermissionManager : NSObject
+@interface AIPermissionManager : NSObject
 
 //照相机是否可用
 +(BOOL)isCameraAvailable:(void (^)(BOOL granted))handler;

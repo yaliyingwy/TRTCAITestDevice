@@ -5,10 +5,10 @@
 //  Created by ywen on 2024/9/24.
 //
 
-#import "PermissionManager.h"
+#import "AIPermissionManager.h"
 
 
-@implementation PermissionManager
+@implementation AIPermissionManager
 
 //照相机是否可用
 +(BOOL)isCameraAvailable:(void (^)(BOOL granted))handler
