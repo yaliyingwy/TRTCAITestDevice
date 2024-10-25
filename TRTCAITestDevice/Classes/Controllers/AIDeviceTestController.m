@@ -410,9 +410,7 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
     
     [_aiSdkManager muteLocalAudio];
     [self startAIConversation];
-    
-    
-    [self startLangSelect];
+ 
 }
 
 
@@ -426,6 +424,7 @@ typedef NS_ENUM(NSInteger, CameraDetectStatus) {
         } success:^(id  _Nonnull responseObject) {
             NSLog(@"startAIConversation: %@",  responseObject);
             [weakSelf.aiConversationView.chatView updateMessageList:@[[weakSelf.trtcParams valueForKey: @"welcomeMessage"]]];
+            [weakSelf startLangSelect];
         } failure:^(NSError * _Nonnull error) {
             NSLog(@"startAIConversation: %@",  error);
         }];

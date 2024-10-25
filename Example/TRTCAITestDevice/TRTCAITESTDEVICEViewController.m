@@ -67,10 +67,10 @@
 - (void)goToFirstViewController {
     AIDeviceTestController *netVC = [[AIDeviceTestController alloc] init];
     netVC.trtcParams = @{
-        @"sdkAppId": @1600052040,
-        @"userId": @"6622051",
-        @"userSig": @"eJw1jkEKwjAURO*StdSftE1DwI2IiuhCLbiuJC2-0RDSqAHx7oZal-OYN8yb1PtzpqNDr4nkUAiA2cie2hNJWAbklwdlGudQEUk5AJQMiqmJStuALY4C54xBSf8SdolhLwaziob34XExryg0PeQ3tDac9HW7O67dvKnD0ncbWExiwHv6QyuW9ngF*ecLIRMxUg__",
-        @"roomId": @"1253802"
+        @"sdkAppId": @0,
+        @"userId": @"",
+        @"userSig": @"",
+        @"roomId": @""
     };
     netVC.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:netVC animated:YES completion:nil];
